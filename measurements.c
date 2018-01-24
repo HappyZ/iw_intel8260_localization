@@ -70,12 +70,20 @@ static int ftm_put_target(struct nl_msg *msg, struct ftm_target *tgt)
 		return -ENOBUFS;
 
 	if (tgt->one_sided) {
-		if (nla_put_flag(msg, NL80211_FTM_TARGET_ATTR_ONE_SIDED))
+		if (nla_put_flag(msg, NL80211_FTM_TARGET_ATTR_ONE_SIDED)) {
+			printf("One-sided feature failed\n");
 			return -ENOBUFS;
+		}
 	} else if (tgt->asap) {
-		if (nla_put_flag(msg, NL80211_FTM_TARGET_ATTR_ASAP))
+		if (nla_put_flag(msg, NL80211_FTM_TARGET_ATTR_ASAP)) {
+			printf("ASAP feature failed\n");
 			return -ENOBUFS;
+		}
 	}
+
+	printf("Success to put for target %hhx:%hhx:%hhx:%hhx:%hhx:%hhx\n",
+		     tgt->target[0], tgt->target[1], tgt->target[2],
+		     tgt->target[3], tgt->target[4], tgt->target[5]);
 
 	return 0;
 }
