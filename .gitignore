@@ -1,7 +1,7 @@
-iw
-*~
-*.o
-.config
-version.c
-iw.8.gz
-*-stamp
+iw/iw
+iw/*~
+iw/*.o
+iw/.config
+iw/version.c
+iw/iw.8.gz
+iw/*-stamp
