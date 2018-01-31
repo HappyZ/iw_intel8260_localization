@@ -127,7 +127,7 @@ class Measurement(object):
         use median instead of mean for less bias with small number of rounds
         '''
         result = {}
-        avg_result = {}
+        median_result = {}
         for i in range(rounds):
             # no guarantee that all rounds are successful
             for each in self.get_distance_once():
