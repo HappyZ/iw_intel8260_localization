@@ -7,7 +7,26 @@ import time
 import argparse
 import subprocess
 
-from numpy import min, max, median, mean, std
+from numpy import median
+
+
+def which(program):
+    '''
+    check if a certain program exists
+    '''
+    def is_executable(fp):
+        return os.path.isfile(fp) and os.access(fp, os.X_OK)
+    fp, fn = os.path.split(program)
+    if fp:
+        if is_executable(program):
+            return program
+    else:
+        for path in os.environ["PATH"].split(os.pathsep):
+            path = path.strip('"')
+            exec_file = os.path.join(path, program)
+            if is_executable(exec_file):
+                return exec_file
+    return None
 
 
 class Measurement(object):
@@ -30,6 +49,31 @@ class Measurement(object):
             r"distance: ([0-9\-]+) cm"
         )
         self.cali = cali
+        if not self.check_iw_validity():
+            exit(127)  # command not found
+
+    def check_iw_validity(self):
+        '''
+        check if iw exists and support FTM commands
+        '''
+        iwPath = which('iw')
+        if iwPath is None:
+            print('Err: iw command not found!')
+            return False
+        p = subprocess.Popen(
+            "iw --help | grep FTM",
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            shell=True
+        )
+        out, err = p.communicate()
+        if err:
+            print('Err: {0}'.format(err))
+            return False
+        if 'FTM' not in out:
+            print('Err: iw command does not support FTM')
+            return False
+        return True
 
     def prepare_config_file(self, targets):
         if not isinstance(targets, dict):
@@ -111,12 +155,12 @@ def wrapper(args):
         }
     }
     counter = 1
-    while 1:
-        print('Round {0}'.format(counter))
-        with Measurement(
-            args['interface'],
-            ofp=args['filepath'], cali=args['cali']
-        ) as m:
+    with Measurement(
+        args['interface'],
+        ofp=args['filepath'], cali=args['cali']
+    ) as m:
+        while 1:
+            print('Round {0}'.format(counter))
             try:
                 m.prepare_config_file(args['config_entry'])
                 # only print out results
