@@ -3,6 +3,7 @@
 
 import re
 import os
+import time
 import argparse
 import subprocess
 
@@ -13,10 +14,14 @@ class Measurement(object):
     def __init__(self, interface, ofp=None, cali=(1.0, 0.0)):
         self.outf = None
         self.interface = interface
+        # default file path for config for iw ftm_request
         self.config_fp = '/tmp/config_entry'
         if ofp:
             try:
                 self.outf = open(ofp, 'w')
+                self.outf.write(
+                    'MAC,caliDist(cm),rawRTT(psec),rawDist(cm),time(sec)\n'
+                )
             except Exception as e:
                 print(str(e))
         self.regex = (
@@ -65,19 +70,29 @@ class Measurement(object):
                 continue
             distance = self.cali[0] * raw_distance + self.cali[1]
             result.append((mac, distance, rtt, raw_distance))
+            if self.outf is not None:
+                self.outf.write(
+                    "{0},{1:.2f},{2},{3},{4:.6f}\n".format(
+                        mac, distance, rtt, raw_distance, time.time()
+                    )
+                )
         return result
 
-    def get_distance_avg(self, rounds=10):
+    def get_distance_median(self, rounds=10):
+        '''
+        use median instead of mean for less bias with small number of rounds
+        '''
         result = {}
         avg_result = {}
         for i in range(rounds):
+            # no guarantee that all rounds are successful
             for each in self.get_distance_once():
                 if each[0] not in result:
                     result[each[0]] = []
                 result[each[0]].append(each[1:])
         for mac in result:
-            avg_result[mac] = median([x[0] for x in result[mac]])
-        return avg_result
+            median_result[mac] = median([x[0] for x in result[mac]])
+        return median_result
 
     def __enter__(self):
         return self
@@ -95,13 +110,25 @@ def wrapper(args):
             'cf': 2462
         }
     }
-    with Measurement(
-        args['interface'],
-        ofp=args['filepath'], cali=args['cali']
-    ) as m:
-        m.prepare_config_file(args['config_entry'])
-        # print(m.get_distance_once())
-        print(m.get_distance_avg())
+    counter = 1
+    while 1:
+        print('Round {0}'.format(counter))
+        with Measurement(
+            args['interface'],
+            ofp=args['filepath'], cali=args['cali']
+        ) as m:
+            try:
+                m.prepare_config_file(args['config_entry'])
+                # only print out results
+                results = m.get_distance_median(rounds=args['rounds'])
+                for mac in results:
+                    print('* {0} is {1:.4f}cm away.'.format(mac, results[mac]))
+            except KeyboardInterrupt:
+                break
+            except Exception as e:
+                print(str(e))
+                break
+            counter += 1
 
 
 def main():
@@ -117,6 +144,12 @@ def main():
         '--filepath', '-f',
         default=None,
         help="if set, will write raw fetched data to file"
+    )
+    p.add_argument(
+        '--rounds',
+        default=10,
+        type=int,
+        help="how many rounds to run one command; default is 10"
     )
     p.add_argument(
         '--interface', '-i',
