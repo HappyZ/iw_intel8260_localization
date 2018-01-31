@@ -40,7 +40,7 @@ def main():
     p.add_argument(
         '--cali',
         nargs=2,
-        default=(0.9084, 526.8163),
+        default=(0.9234, 534.7103),
         type=float,
         help="calibrate final result"
     )
