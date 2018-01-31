@@ -180,7 +180,8 @@ def main():
     p.add_argument(
         '--cali',
         nargs=2,
-        default=(0.9234, 534.7103),
+        # default=(0.9234, 534.7103),  # indoor
+        default=(0.8324, 583.7435),  # outdoor
         type=float,
         help="calibrate final result"
     )

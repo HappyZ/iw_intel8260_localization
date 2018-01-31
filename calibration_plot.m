@@ -1,14 +1,15 @@
 figure(1);
 clf; hold on;
 
-desired_result = [60:30:1200, 120, 170, 200, 430, 1000, 1300:100:2000];
+% desired_result = [60:30:1200, 120, 170, 200, 430, 1000, 1300:100:2000];
+desired_result = 100:100:2500;
 median_result = zeros(size(desired_result));
 mean_result = zeros(size(desired_result));
 diff_result = zeros(size(desired_result));
 all_data = [];
 for i = 1:length(desired_result)
     dist = desired_result(i);
-    filename = ['calibration_data/result_', num2str(dist), 'cm.txt'];
+    filename = ['calibration_data/outdoor/result_', num2str(dist), 'cm.txt'];
 
     fileID = fopen(filename, 'r');
     sizeData = [9 Inf];
