@@ -21,7 +21,7 @@ def wrapper(args):
             distance = int(tmp[3].split(' ')[1])
             if distance < -1000:
                 continue
-            results.append(distance * args['args'][0] + args['cali'][1])
+            results.append(distance * args['cali'][0] + args['cali'][1])
     print('statics of results')
     print('* num of valid data: {0}'.format(len(results)))
     print('* min: {0:.2f}cm'.format(min(results)))
