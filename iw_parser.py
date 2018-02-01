@@ -1,7 +1,9 @@
 #!/usr/bin/python
+# -*- coding: utf-8 -*-
 
 
 import os
+import re
 import argparse
 
 from numpy import min, max, median, mean, std
