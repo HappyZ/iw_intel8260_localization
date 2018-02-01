@@ -365,9 +365,8 @@ static void parse_ftm_results(struct nlattr **attrs, int status,
 	rssi = tb[NL80211_FTM_RESP_ENTRY_ATTR_RSSI] ? 
 		   (signed int)nla_get_s8(tb[NL80211_FTM_RESP_ENTRY_ATTR_RSSI]) : 0;
 
-	printf("Target: %s, status: %d, " +
-		   "rtt: %lld (±%lld) psec, " +
-		   "distance: %lld (±%lld)cm, rssi: %d dBm",
+	printf(
+		   "Target: %s, status: %d, rtt: %lld (±%lld) psec, distance: %lld (±%lld) cm, rssi: %d dBm",
 	       macbuf, nla_get_u8(tb[NL80211_FTM_RESP_ENTRY_ATTR_STATUS]),
 	       rtt, rtt_var, dist, dist_var, rssi);
 

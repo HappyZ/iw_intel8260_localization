@@ -45,8 +45,8 @@ class Measurement(object):
                 print(str(e))
         self.regex = (
             r"Target: (([0-9a-f]{2}:*){6}), " +
-            r"status: ([0-9]), rtt: ([0-9\-]+) psec, " +
-            r"distance: ([0-9\-]+) cm"
+            r"status: ([0-9]), rtt: ([0-9\-]+) \(±([0-9\-]+)\) psec, " +
+            r"distance: ([0-9\-]+) \(±([0-9\-]+)\) cm, rssi: ([0-9\-]+) dBm"
         )
         self.cali = cali
         if not self.check_iw_validity():
@@ -111,7 +111,10 @@ class Measurement(object):
             mac = match.group(1)
             status = int(match.group(3))
             rtt = int(match.group(4))
-            raw_distance = int(match.group(5))
+            rtt_var = int(match.group(5))
+            raw_distance = int(match.group(6))
+            raw_distance_var = int(match.group(7))
+            rssi = int(match.group(8))
             if status is not 0 or raw_distance < -1000:
                 continue
             distance = self.cali[0] * raw_distance + self.cali[1]
