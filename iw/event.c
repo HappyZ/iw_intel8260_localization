@@ -317,7 +317,8 @@ static void parse_ftm_results(struct nlattr **attrs, int status,
 	struct nlattr *tb[NL80211_FTM_RESP_ENTRY_ATTR_MAX + 1];
 	unsigned char bssid[ETH_ALEN];
 	char macbuf[6 * 3];
-	long long int rtt, dist;
+	long long int rtt, rtt_var, dist, dist_var;
+	signed int rssi;
 	int err;
 
 	printf("FTM result! Status: %d\n", status);
@@ -352,13 +353,23 @@ static void parse_ftm_results(struct nlattr **attrs, int status,
 
 	mac_addr_n2a(macbuf, bssid);
 	rtt = (long long int)nla_get_u64(tb[NL80211_FTM_RESP_ENTRY_ATTR_RTT]);
+	rtt_var = tb[NL80211_FTM_RESP_ENTRY_ATTR_RTT_VAR] ?
+	          (long long int)nla_get_u64(
+	          tb[NL80211_FTM_RESP_ENTRY_ATTR_RTT_VAR]) : 0;
 	dist = tb[NL80211_FTM_RESP_ENTRY_ATTR_DISTANCE] ?
 	       (long long int)nla_get_u64(tb[NL80211_FTM_RESP_ENTRY_ATTR_DISTANCE]) :
 	       rtt * SOL_CM_PSEC;
+	dist_var = tb[NL80211_FTM_RESP_ENTRY_ATTR_DISTANCE_VAR] ?
+	          (long long int)nla_get_u64(
+	          tb[NL80211_FTM_RESP_ENTRY_ATTR_DISTANCE_VAR]) : 0;
+	rssi = tb[NL80211_FTM_RESP_ENTRY_ATTR_RSSI] ? 
+		   (signed int)nla_get_s8(tb[NL80211_FTM_RESP_ENTRY_ATTR_RSSI]) : 0;
 
-	printf("Target: %s, status: %d, rtt: %lld psec, distance: %lld cm",
-	       macbuf, nla_get_u8(tb[NL80211_FTM_RESP_ENTRY_ATTR_STATUS]), rtt,
-	       dist);
+	printf("Target: %s, status: %d, " +
+		   "rtt: %lld (±%lld) psec, " +
+		   "distance: %lld (±%lld)cm, rssi: %d dBm",
+	       macbuf, nla_get_u8(tb[NL80211_FTM_RESP_ENTRY_ATTR_STATUS]),
+	       rtt, rtt_var, dist, dist_var, rssi);
 
 	if (tb[NL80211_FTM_RESP_ENTRY_ATTR_LCI])
 		iw_hexdump("LCI",

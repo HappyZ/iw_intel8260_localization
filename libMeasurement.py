@@ -81,10 +81,12 @@ class Measurement(object):
         with open(self.config_fp, 'w') as of:
             for bssid in targets:
                 of.write(
-                    "{0} bw={1} cf={2} retries=5 asap\n".format(
+                    "{0} bw={1} cf={2} retries={3} asap spb={4}\n".format(
                         bssid,
                         targets[bssid]['bw'],
-                        targets[bssid]['cf']
+                        targets[bssid]['cf'],
+                        targets[bssid]['retries'],
+                        targets[bssid]['spb'],
                     )
                 )
         return True
@@ -151,7 +153,9 @@ def wrapper(args):
     args['config_entry'] = {
         '34:f6:4b:5e:69:1f': {
             'bw': 20,
-            'cf': 2462
+            'cf': 2462,
+            'spb': 255,
+            'retries': 3
         }
     }
     counter = 1
