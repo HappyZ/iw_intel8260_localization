@@ -206,6 +206,11 @@ def main():
     except Exception as e:
         print(str(e))
         sys.exit()
+    args['time_of_exec'] = int(time.time())
+    # rename file path by adding time of exec
+    if args['filepath']:
+        fp, ext = os.path.splitext(args['filepath'])
+        args['filepath'] = "{0}_{1}{2}".format(fp, args['time_of_exec'], ext)
     wrapper(args)
 
 
