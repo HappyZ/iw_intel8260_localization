@@ -39,7 +39,8 @@ class Measurement(object):
             try:
                 self.outf = open(ofp, 'w')
                 self.outf.write(
-                    'MAC,caliDist(cm),rawRTT(psec),rawDist(cm),time(sec)\n'
+                    'MAC,caliDist(cm),rawRTT(psec),rawRTTVar,rawDist(cm),' +
+                    'rawDistVar,rssi(dBm),time(sec)\n'
                 )
             except Exception as e:
                 print(str(e))
@@ -121,18 +122,22 @@ class Measurement(object):
             result.append((mac, distance, rtt, raw_distance))
             if self.outf is not None:
                 self.outf.write(
-                    "{0},{1:.2f},{2},{3},{4:.6f}\n".format(
-                        mac, distance, rtt, raw_distance, time.time()
+                    "{0},{1:.2f},{2},{3},{4},{5},{6},{7:.6f}\n".format(
+                        mac, distance, rtt, rtt_var,
+                        raw_distance, raw_distance_var,
+                        rssi, time.time()
                     )
                 )
         return result
 
-    def get_distance_median(self, rounds=10):
+    def get_distance_median(self, rounds=1):
         '''
         use median instead of mean for less bias with small number of rounds
         '''
         result = {}
         median_result = {}
+        if rounds < 1:
+            rounds = 1
         for i in range(rounds):
             # no guarantee that all rounds are successful
             for each in self.get_distance_once():
@@ -199,9 +204,9 @@ def main():
     )
     p.add_argument(
         '--rounds',
-        default=10,
+        default=3,
         type=int,
-        help="how many rounds to run one command; default is 10"
+        help="how many rounds to run one command; default is 3"
     )
     p.add_argument(
         '--interface', '-i',
