@@ -100,7 +100,7 @@ class Measurement(object):
         out, err = p.communicate()
         if err:
             print(err)
-            return []
+            exit(13)
         matches = re.finditer(self.regex, out)
         if not matches:
             return []
