@@ -121,7 +121,9 @@ data_parabolic = ...
     param_parabolic(3);
 mstd_parabolic = sqrt(...
     sum((data_parabolic - all_data(2, :)).^2) / size(all_data, 2));
-scatter(all_data(1, :), data_parabolic, 'k.');
+scatter(all_data(1, :), data_parabolic, 'g.');
+
+legend('all data', 'median val', 'linear fit', 'parabolic fit', 'location', 'best')
 
 fprintf('Std Err:\n');
 fprintf(' linear mode: %.6f\n', mstd_linear);

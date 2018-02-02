@@ -236,7 +236,7 @@ def main():
         help="load a config json file"
     )
     p.add_argument(
-        '--verbose', '-v'
+        '--verbose', '-v',
         default=False,
         action="store_true"
         help="if set, show detailed messages"
