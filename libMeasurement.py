@@ -238,7 +238,7 @@ def main():
     p.add_argument(
         '--verbose', '-v',
         default=False,
-        action="store_true"
+        action="store_true",
         help="if set, show detailed messages"
     )
     try:
