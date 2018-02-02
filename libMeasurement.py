@@ -171,7 +171,7 @@ class Measurement(object):
 def wrapper(args):
     if os.path.isfile(args['json']):
         args['config_entry'] = json.load(open(args['json'], 'r'))
-        print('Successfully loaded {0}!'.formart(args['json']))
+        print('Successfully loaded {0}!'.format(args['json']))
     else:  # default config
         args['config_entry'] = {
             '34:f6:4b:5e:69:1f': {
