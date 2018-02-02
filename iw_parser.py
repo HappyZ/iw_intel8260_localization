@@ -71,7 +71,6 @@ def main():
         '--cali',
         nargs=2,
         default=(0.9376, 558.0551),
-        # default=(0.9234, 534.7103),
         type=float,
         help="calibrate final result"
     )

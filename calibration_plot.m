@@ -1,7 +1,7 @@
 clear all;
 
 folder = 'calibration_data/new_indoor/';
-files = dir(folder);
+files = dir(folder); files = files(3:end);  % remove . and ..
 targets = zeros(1, length(files));
 for i = length(files):-1:1
     if (~contains(files(i).name, 'result') ||...
@@ -23,6 +23,7 @@ median_result = zeros(1, length(files));
 mean_result = zeros(1, length(files));
 all_data = [];
 figure(1); clf; hold on;
+% figure(2); clf; hold on;
 for i = 1:length(files)
     filename = [folder, files(i).name];
 
@@ -34,17 +35,18 @@ for i = 1:length(files)
     data = fscanf(fileID, formatSpec, [9 Inf]);
     fclose(fileID);
     if isempty(data)
-        data = readtable(filename);
+        data = readtable(filename, 'ReadVariableNames', 0);
         if isempty(data)
             continue
         end
-        caliDist = table2array(data(:, 2))';
-        rawRTT = table2array(data(:, 3))';
-        rawRTTVar = table2array(data(:, 4))';
-        rawDist = table2array(data(:, 5))';
-        rawDistVar = table2array(data(:, 6))';
-        rssi = table2array(data(:, 7))';
-        time = table2array(data(:, 8))';
+        data = data(2:end, :);
+        caliDist = str2double(table2array(data(:, 2)))';
+        rawRTT = str2double(table2array(data(:, 3)))';
+        rawRTTVar = str2double(table2array(data(:, 4)))';
+        rawDist = str2double(table2array(data(:, 5)))';
+        rawDistVar = str2double(table2array(data(:, 6)))';
+        rssi = str2double(table2array(data(:, 7)))';
+        time = str2double(table2array(data(:, 8)))';
     else
         % get rid of invalid data
         data(:, data(7, :) ~= 0) = [];
@@ -61,6 +63,11 @@ for i = 1:length(files)
     fprintf('* std: %.2f (uncalibrated)\n', std(rawDist));
 
     figure(1); cdfplot(rawDist);
+%     figure(2);
+%     scatter3(...
+%         sqrt(rawDistVar),...
+%         rssi,...
+%         rawDist - targets(i));
     
     all_data = [...
         all_data,...
@@ -95,7 +102,7 @@ end
 %     size(all_data, 2));
 
 
-figure(2); clf; hold on;
+figure(3); clf; hold on;
 scatter(all_data(1, :), all_data(2, :), 'b.');
 plot(median_result, targets, 'r', 'LineWidth', 2)
 
