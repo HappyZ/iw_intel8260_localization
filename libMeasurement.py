@@ -4,10 +4,11 @@
 import re
 import os
 import time
+import json
 import argparse
 import subprocess
 
-from numpy import median
+from numpy import median, sqrt
 
 
 def which(program):
@@ -82,7 +83,8 @@ class Measurement(object):
         with open(self.config_fp, 'w') as of:
             for bssid in targets:
                 of.write(
-                    "{0} bw={1} cf={2} retries={3} asap spb={4}\n".format(
+                    "{0} bw={1} cf={2} retries={3} asap spb={4}\n"
+                    .format(
                         bssid,
                         targets[bssid]['bw'],
                         targets[bssid]['cf'],
@@ -92,7 +94,7 @@ class Measurement(object):
                 )
         return True
 
-    def get_distance_once(self):
+    def get_distance_once(self, verbose=False):
         p = subprocess.Popen(
             "iw wlp58s0 measurement ftm_request " +
             "{0}".format(self.config_fp),
@@ -119,10 +121,19 @@ class Measurement(object):
             if status is not 0 or raw_distance < -1000:
                 continue
             distance = self.cali[0] * raw_distance + self.cali[1]
-            result.append((mac, distance, rtt, raw_distance))
+            result.append(
+                (mac, distance, rtt, rtt_var,
+                 raw_distance, raw_distance_var, rssi)
+            )
+            if verbose:
+                print(
+                    '*** {0} - {1}dBm - {2} (±{3:.2f}cm)'
+                    .format(mac, rssi, raw_distance, sqrt(raw_distance_var))
+                )
             if self.outf is not None:
                 self.outf.write(
-                    "{0},{1:.2f},{2},{3},{4},{5},{6},{7:.6f}\n".format(
+                    "{0},{1:.2f},{2},{3},{4},{5},{6},{7:.6f}\n"
+                    .format(
                         mac, distance, rtt, rtt_var,
                         raw_distance, raw_distance_var,
                         rssi, time.time()
@@ -130,7 +141,7 @@ class Measurement(object):
                 )
         return result
 
-    def get_distance_median(self, rounds=1):
+    def get_distance_median(self, rounds=1, verbose=False):
         '''
         use median instead of mean for less bias with small number of rounds
         '''
@@ -140,7 +151,7 @@ class Measurement(object):
             rounds = 1
         for i in range(rounds):
             # no guarantee that all rounds are successful
-            for each in self.get_distance_once():
+            for each in self.get_distance_once(verbose=verbose):
                 if each[0] not in result:
                     result[each[0]] = []
                 result[each[0]].append(each[1:])
@@ -158,14 +169,18 @@ class Measurement(object):
 
 
 def wrapper(args):
-    args['config_entry'] = {
-        '34:f6:4b:5e:69:1f': {
-            'bw': 20,
-            'cf': 2462,
-            'spb': 255,
-            'retries': 3
+    if os.path.isfile(args['json']):
+        args['config_entry'] = json.load(open(args['json'], 'r'))
+        print('Successfully loaded {0}!'.formart(args['json']))
+    else:  # default config
+        args['config_entry'] = {
+            '34:f6:4b:5e:69:1f': {
+                'bw': 20,
+                'cf': 2462,
+                'spb': 255,
+                'retries': 3
+            }
         }
-    }
     counter = 1
     with Measurement(
         args['interface'],
@@ -176,7 +191,9 @@ def wrapper(args):
             try:
                 m.prepare_config_file(args['config_entry'])
                 # only print out results
-                results = m.get_distance_median(rounds=args['rounds'])
+                results = m.get_distance_median(
+                    rounds=args['rounds'], verbose=args['verbose']
+                )
                 for mac in results:
                     print('* {0} is {1:.4f}cm away.'.format(mac, results[mac]))
             except KeyboardInterrupt:
@@ -212,6 +229,17 @@ def main():
         '--interface', '-i',
         default='wlp58s0',
         help="set the wireless interface"
+    )
+    p.add_argument(
+        '--json', '-j',
+        default='config_entry.default',
+        help="load a config json file"
+    )
+    p.add_argument(
+        '--verbose', '-v'
+        default=False,
+        action="store_true"
+        help="if set, show detailed messages"
     )
     try:
         args = vars(p.parse_args())
