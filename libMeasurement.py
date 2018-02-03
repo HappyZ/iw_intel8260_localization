@@ -43,6 +43,10 @@ class Measurement(object):
                     'MAC,caliDist(cm),rawRTT(psec),rawRTTVar,rawDist(cm),' +
                     'rawDistVar,rssi(dBm),time(sec)\n'
                 )
+                self.outf.write(
+                    "ff:ff:ff:ff:ff:ff,nan,nan,nan,nan,nan,nan,{0:.6f}\n"
+                    .format(time.time())
+                )
             except Exception as e:
                 print(str(e))
         self.regex = (
@@ -165,6 +169,10 @@ class Measurement(object):
     def __exit__(self, exc_type, exc_value, traceback):
         # properly close the file when destroying the object
         if self.outf is not None:
+            self.outf.write(
+                "ff:ff:ff:ff:ff:ff,nan,nan,nan,nan,nan,nan,{0:.6f}\n"
+                .format(time.time())
+            )
             self.outf.close()
 
 
