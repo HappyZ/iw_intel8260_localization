@@ -220,7 +220,7 @@ def main():
         # default=(0.9376, 558.0551),  # indoor
         default=(0.8927, 553.3157),  # outdoor
         type=float,
-        help="calibrate final result"
+        help="calibrate calibration params (pre-defined outdoor by default)"
     )
     p.add_argument(
         '--filepath', '-f',
@@ -258,13 +258,13 @@ def main():
             "(will be ignored if `cali` is being used)"
         )
     )
-    if args['indoor'] and args['cali'] == (0.8927, 553.3157):
-        args['cali'] = (0.9376, 558.0551)
     try:
         args = vars(p.parse_args())
     except Exception as e:
         print(str(e))
         sys.exit()
+    if args['indoor'] and args['cali'] == (0.8927, 553.3157):
+        args['cali'] = (0.9376, 558.0551)
     args['time_of_exec'] = int(time.time())
     # rename file path by adding time of exec
     if args['filepath']:
