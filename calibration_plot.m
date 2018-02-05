@@ -1,4 +1,4 @@
-clear all;
+% clear all; %close all;
 
 folder = 'calibration_data/new_indoor/';
 files = dir(folder); files = files(3:end);  % remove . and ..
@@ -21,6 +21,8 @@ files = files(orderI);
 
 median_result = zeros(1, length(files));
 mean_result = zeros(1, length(files));
+median_rssi = zeros(1, length(files));
+median_diststd = zeros(1, length(files));
 all_data = [];
 figure(1); clf; hold on;
 % figure(2); clf; hold on;
@@ -56,6 +58,8 @@ for i = 1:length(files)
 
     mean_result(i) = mean(rawDist);
     median_result(i) = median(rawDist);
+    median_diststd(i) = median(sqrt(rawDistVar));
+    median_rssi(i) = median(rssi);
     
     fprintf('distance: %d:\n', targets(i));
     fprintf('* mean: %.2f (uncalibrated)\n', mean_result(i));
@@ -71,7 +75,11 @@ for i = 1:length(files)
     
     all_data = [...
         all_data,...
-        [rawDist; targets(i) * ones(1, size(rawDist, 2))]...
+        [rawDist;...
+         targets(i) * ones(1, size(rawDist, 2));...
+         sqrt(rawDistVar);...
+         rssi
+        ]...
     ];
 end
 
@@ -113,6 +121,17 @@ mstd_linear = sqrt(...
     sum((data_linear - all_data(2, :)).^2) / size(all_data, 2));
 scatter(all_data(1, :), data_linear, 'c.');
 
+
+diffs = data_linear - all_data(2, :); diffs_std = [];
+figure(4); clf; hold on;
+cdfplot(diffs)
+% for i = 1:size(targets, 2)
+%     diffs_std(i) = std(diffs(all_data(2, :) == targets(i)));
+% %     pause;
+% end
+% scatter(median_rssi, diffs_std)
+
+figure(3);
 % parabolic fit
 param_parabolic = polyfit(all_data(1, :), all_data(2, :), 2);
 data_parabolic = ...
@@ -123,9 +142,46 @@ mstd_parabolic = sqrt(...
     sum((data_parabolic - all_data(2, :)).^2) / size(all_data, 2));
 scatter(all_data(1, :), data_parabolic, 'g.');
 
+xlabel('Raw Distance'); 
+ylabel('Target Distance');
 legend('all data', 'median val', 'linear fit', 'parabolic fit', 'location', 'best')
 
 fprintf('Std Err:\n');
 fprintf(' linear mode: %.6f\n', mstd_linear);
 fprintf(' parabolic mode: %.6f\n', mstd_parabolic);
 
+
+
+
+% 
+% diffs = [];
+% diffs = [diffs, calibration_walking('calibration_data/walking_outdoor/result_walking_3800_to_100cm_1517706485.txt')];
+% diffs = [diffs, calibration_walking('calibration_data/walking_outdoor/result_walking_3800_to_100cm_1517706584.txt')];
+% diffs = [diffs, calibration_walking('calibration_data/walking_outdoor/result_walking_3800_to_100cm_1517706685.txt')];
+% diffs = [diffs, calibration_walking('calibration_data/walking_outdoor/result_walking_3800_to_100cm_1517706784.txt')];
+% diffs = [diffs, calibration_walking('calibration_data/walking_outdoor/result_walking_3800_to_100cm_1517706881.txt')];
+% diffs = [diffs, calibration_walking('calibration_data/walking_outdoor/result_walking_3800_to_100cm_1517706976.txt')];
+% diffs = [diffs, calibration_walking('calibration_data/walking_outdoor/result_walking_3800_to_100cm_1517707172.txt')];
+% pd = fitdist(diffs(~isnan(diffs))', 'Normal');
+% prob_fit = cdf(pd, diffs(~isnan(diffs))');
+% figure(10); clf; hold on;
+% scatter(diffs(~isnan(diffs))', prob_fit);
+% cdfplot(diffs); xlim([-200, 200])
+% xlabel('Distance Err (cm)')
+% title('Distribution of Distance Err When Walking')
+% legend('fitted \mu=53.5043, \sigma=72.1852', 'actual dist error', 'location', 'best')
+
+% 
+diffs = [];
+diffs = [diffs, calibration_walking('calibration_data/walking_indoor/result_walking_3600_to_100cm_1517693155.txt')];
+diffs = [diffs, calibration_walking('calibration_data/walking_indoor/result_walking_3600_to_100cm_1517693287.txt')];
+diffs = [diffs, calibration_walking('calibration_data/walking_indoor/result_walking_3600_to_100cm_1517693408.txt')];
+diffs = [diffs, calibration_walking('calibration_data/walking_indoor/result_walking_3600_to_100cm_1517693534.txt')];
+pd = fitdist(diffs(~isnan(diffs))', 'Normal');
+prob_fit = cdf(pd, diffs(~isnan(diffs))');
+figure(11); clf; hold on;
+scatter(diffs(~isnan(diffs))', prob_fit);
+cdfplot(diffs); xlim([-200, 200])
+xlabel('Distance Err (cm)')
+title('Distribution of Distance Err When Walking')
+legend('fitted \mu=28.8055, \sigma=50.1228', 'actual dist error', 'location', 'best')
