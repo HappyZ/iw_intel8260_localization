@@ -249,6 +249,17 @@ def main():
         action="store_true",
         help="if set, show detailed messages"
     )
+    p.add_argument(
+        '--indoor',
+        default=False,
+        action="store_true",
+        help=(
+            "if set, use default indoor calibration params " +
+            "(will be ignored if `cali` is being used)"
+        )
+    )
+    if args['indoor'] and args['cali'] == (0.8927, 553.3157):
+        args['cali'] = (0.9376, 558.0551)
     try:
         args = vars(p.parse_args())
     except Exception as e:
