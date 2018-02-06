@@ -9,6 +9,7 @@ import argparse
 import subprocess
 
 from numpy import median, sqrt
+from libLocalization import deriveLocation
 
 
 def which(program):
@@ -114,6 +115,7 @@ class Measurement(object):
         if not matches:
             return []
         result = []
+        mytime = time.time()
         for match in matches:
             mac = match.group(1)
             status = int(match.group(3))
@@ -140,7 +142,7 @@ class Measurement(object):
                     .format(
                         mac, distance, rtt, rtt_var,
                         raw_distance, raw_distance_var,
-                        rssi, time.time()
+                        rssi, mytime
                     )
                 )
         return result
@@ -204,6 +206,13 @@ def wrapper(args):
                 )
                 for mac in results:
                     print('* {0} is {1:.4f}cm away.'.format(mac, results[mac]))
+                # calculate location info
+                if args['locs']:
+                    loc = deriveLocation(args, results)
+                    print(
+                        '* Derived location: ({0:.3f}, {1:.3f})'
+                        .format(loc[0], loc[1])
+                    )
             except KeyboardInterrupt:
                 break
             except Exception as e:
@@ -229,9 +238,9 @@ def main():
     )
     p.add_argument(
         '--rounds',
-        default=3,
+        default=1,
         type=int,
-        help="how many rounds to run one command; default is 3"
+        help="how many rounds to run one command; default is 1"
     )
     p.add_argument(
         '--interface', '-i',
@@ -256,6 +265,15 @@ def main():
         help=(
             "if set, use default indoor calibration params " +
             "(will be ignored if `cali` is being used)"
+        )
+    )
+    p.add_argument(
+        '--locs',
+        default=False,
+        action="store_true",
+        help=(
+            "if set, derive location" +
+            "and store it to file"
         )
     )
     try:
