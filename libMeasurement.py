@@ -162,7 +162,13 @@ class Measurement(object):
                     result[each[0]] = []
                 result[each[0]].append(each[1:])
         for mac in result:
-            median_result[mac] = median([x[0] for x in result[mac]])
+            median_result[mac] = (
+                median([x[0] for x in result[mac]]),
+                median(
+                    [sqrt(x[4]) * self.cali[0] + self.cali[1]
+                     for x in result[mac]]
+                )
+            )
         return median_result
 
     def __enter__(self):
@@ -205,7 +211,10 @@ def wrapper(args):
                     rounds=args['rounds'], verbose=args['verbose']
                 )
                 for mac in results:
-                    print('* {0} is {1:.4f}cm away.'.format(mac, results[mac]))
+                    print(
+                        '* {0} is {1:.4f}cm (±{2:.2f}) away.'
+                        .format(mac, results[mac][0], results[mac][1])
+                    )
                 # calculate location info
                 if args['locs']:
                     loc = deriveLocation(args, results)
@@ -284,6 +293,8 @@ def main():
     if args['indoor'] and args['cali'] == (0.8927, 553.3157):
         args['cali'] = (0.9376, 558.0551)
     args['time_of_exec'] = int(time.time())
+    # TODO: add option to change loc bounds, currently force y_min = 0
+    args['loc_bounds'] = {'y_min': 0}
     # rename file path by adding time of exec
     if args['filepath']:
         fp, ext = os.path.splitext(args['filepath'])

@@ -6,7 +6,7 @@ import time
 import math
 import argparse
 
-from numpy import median
+from numpy import median, arange
 
 # ======= start =======
 # excerpt from
@@ -97,11 +97,12 @@ def get_polygon_center(points):
 
 def trilateration2d(mydict, bounds=None, verbose=False):
     '''
+    mydict format: {
+        location: (radius, std),...
+    }
     bound format: {
-        'x_min': float,
-        'x_max': float,
-        'y_min': float,
-        'y_max': float
+        'x_min': float, 'x_max': float,
+        'y_min': float, 'y_max': float
     }
     '''
     points = []
@@ -110,13 +111,21 @@ def trilateration2d(mydict, bounds=None, verbose=False):
         tmp = loc.split(',')
         p = Point(tmp[0], tmp[1])
         points.append(p)
-        c = Circle(p, mydict[loc])
-        circles.append(c)
+        if mydict[loc][1]:
+            # create multiple circles based on std
+            for r in arange(
+                mydict[loc][0] - mydict[loc][1],
+                mydict[loc][0] + mydict[loc][1],
+                10
+            ):
+                circles.append(Circle(p, r))
+        else:
+            circles.append(Circle(p, mydict[loc]))
     # print(len(points), len(circles))
     inner_points = []
     for p in get_intersecting_points(circles):
-        if not is_contained_in_circles(p, circles):
-            continue
+        # if not is_contained_in_circles(p, circles):
+        #     continue
         if bounds is not None:
             if bounds.get('x_min', None) is not None and bounds['x_min'] > p.x:
                 continue
@@ -162,23 +171,23 @@ def deriveLocation(args, results):
 
 
 if __name__ == '__main__':
-    deriveLocation(
+    loc = deriveLocation(
         {
             'config_entry': {
                 '34:f6:4b:5e:69:1f': {'location': '0,0'},
-                '34:f6:4b:5e:69:1e': {'location': '1,1'},
+                '34:f6:4b:5e:69:1e': {'location': '180,0'},
                 '34:f6:4b:5e:69:1d': {'location': '0,2'},
                 '34:f6:4b:5e:69:1a': {'location': '1,2'}
             },
             'verbose': True,
-            'filepath': 'test.txt',
+            'filepath': '',
             'loc_bounds': {
-                'x_min': 0
+                'y_min': 0
             }
         },
         {
-            '34:f6:4b:5e:69:1f': 100,
-            '34:f6:4b:5e:69:1e': 100,
-            '34:f6:4b:5e:69:1d': 220
+            '34:f6:4b:5e:69:1f': (257, 50),
+            '34:f6:4b:5e:69:1e': (50, 50)
         }
     )
+    print(loc)
