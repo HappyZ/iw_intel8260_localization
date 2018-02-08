@@ -95,6 +95,24 @@ def get_polygon_center(points):
 # ======= end =======
 
 
+def calcInnerPoints(circles, bounds):
+    inner_points = []
+    for p in get_intersecting_points(circles):
+        # if not is_contained_in_circles(p, circles):
+        #     continue
+        if bounds is not None:
+            if bounds.get('x_min', None) is not None and bounds['x_min'] > p.x:
+                continue
+            if bounds.get('x_max', None) is not None and bounds['x_max'] < p.x:
+                continue
+            if bounds.get('y_min', None) is not None and bounds['y_min'] > p.y:
+                continue
+            if bounds.get('y_max', None) is not None and bounds['y_max'] < p.y:
+                continue
+        inner_points.append(p)
+    return inner_points
+
+
 def trilateration2d(mydict, bounds=None, verbose=False):
     '''
     mydict format: {
@@ -111,31 +129,25 @@ def trilateration2d(mydict, bounds=None, verbose=False):
         tmp = loc.split(',')
         p = Point(tmp[0], tmp[1])
         points.append(p)
-        if mydict[loc][1]:
-            # create multiple circles based on std
-            for r in arange(
-                max(mydict[loc][0] - mydict[loc][1], 0.01),
-                mydict[loc][0] + mydict[loc][1],
-                10
-            ):
-                circles.append(Circle(p, r))
-        else:
-            circles.append(Circle(p, mydict[loc][0]))
+        circles.append(Circle(p, mydict[loc][0]))
     # print(len(points), len(circles))
-    inner_points = []
-    for p in get_intersecting_points(circles):
-        # if not is_contained_in_circles(p, circles):
-        #     continue
-        if bounds is not None:
-            if bounds.get('x_min', None) is not None and bounds['x_min'] > p.x:
-                continue
-            if bounds.get('x_max', None) is not None and bounds['x_max'] < p.x:
-                continue
-            if bounds.get('y_min', None) is not None and bounds['y_min'] > p.y:
-                continue
-            if bounds.get('y_max', None) is not None and bounds['y_max'] < p.y:
-                continue
-        inner_points.append(p)
+    inner_points = calcInnerPoints(circles, bounds)
+    if len(inner_points) is 0:
+        # if empty, create multiple circles based on std
+        circles = []
+        for loc in mydict:
+            tmp = loc.split(',')
+            p = Point(tmp[0], tmp[1])
+            if mydict[loc][1]:
+                for r in arange(
+                    max(mydict[loc][0] - mydict[loc][1], 0.01),
+                    mydict[loc][0] + mydict[loc][1],
+                    10
+                ):
+                    circles.append(Circle(p, r))
+            else:
+                circles.append(Circle(p, mydict[loc][0]))
+        inner_points = calcInnerPoints(circles, bounds)
     if verbose:
         print('* Inner points:')
         if len(inner_points) is 0:
