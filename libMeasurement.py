@@ -165,8 +165,7 @@ class Measurement(object):
             median_result[mac] = (
                 median([x[0] for x in result[mac]]),
                 median(
-                    [sqrt(x[4]) * self.cali[0] + self.cali[1]
-                     for x in result[mac]]
+                    [sqrt(x[4]) * self.cali[0] for x in result[mac]]
                 )
             )
         return median_result
