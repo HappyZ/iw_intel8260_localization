@@ -197,6 +197,18 @@ def wrapper(args):
             }
         }
     counter = 1
+    if args['plot']:
+        try:
+            import matplotlib.pyplot as plt
+            from libLocalization import plotLocation
+            args['plot'] = False
+            handler = None
+            fig = plt.figure()
+            plt.ion()
+            plt.xlim([-100, 500])
+            plt.ylim([-10, 500])
+        except Exception:
+            print('Cannot plot because lacking matplotlib!')
     with Measurement(
         args['interface'],
         ofp=args['filepath'], cali=args['cali']
@@ -221,6 +233,18 @@ def wrapper(args):
                         '* Derived location: ({0:.3f}, {1:.3f})'
                         .format(loc[0], loc[1])
                     )
+                    if args['plot']:
+                        try:
+                            if handler is not None:
+                                handler.remove()
+                            handler = plotLocation(loc)
+                            if handler is None:
+                                plt.close(fig)
+                        except KeyboardInterrupt:
+                            plt.close(fig)
+                            break
+                        except Exception:
+                            raise
             except KeyboardInterrupt:
                 break
             except Exception as e:
@@ -279,10 +303,13 @@ def main():
         '--locs',
         default=False,
         action="store_true",
-        help=(
-            "if set, derive location" +
-            "and store it to file"
-        )
+        help="if set, derive location and store it to file"
+    )
+    p.add_argument(
+        '--plot',
+        default=False,
+        action="store_true",
+        help="if set, will plot the derived location in realtime"
     )
     try:
         args = vars(p.parse_args())

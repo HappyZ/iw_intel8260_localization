@@ -129,25 +129,16 @@ def trilateration2d(mydict, bounds=None, verbose=False):
         tmp = loc.split(',')
         p = Point(tmp[0], tmp[1])
         points.append(p)
-        circles.append(Circle(p, mydict[loc][0]))
-    # print(len(points), len(circles))
+        if mydict[loc][1]:
+            for r in arange(
+                max(mydict[loc][0] - mydict[loc][1], 0.001),
+                mydict[loc][0] + mydict[loc][1],
+                1
+            ):
+                circles.append(Circle(p, r))
+        else:
+            circles.append(Circle(p, mydict[loc][0]))
     inner_points = calcInnerPoints(circles, bounds)
-    if len(inner_points) is 0:
-        # if empty, create multiple circles based on std
-        circles = []
-        for loc in mydict:
-            tmp = loc.split(',')
-            p = Point(tmp[0], tmp[1])
-            if mydict[loc][1]:
-                for r in arange(
-                    max(mydict[loc][0] - mydict[loc][1], 0.01),
-                    mydict[loc][0] + mydict[loc][1],
-                    10
-                ):
-                    circles.append(Circle(p, r))
-            else:
-                circles.append(Circle(p, mydict[loc][0]))
-        inner_points = calcInnerPoints(circles, bounds)
     if verbose:
         print('* Inner points:')
         if len(inner_points) is 0:
@@ -182,6 +173,15 @@ def deriveLocation(args, results):
     return loc
 
 
+def plotLocation(loc):
+    handler = None
+    try:
+        handler = plt.scatter(loc[0], loc[1])
+        plt.pause(0.01)
+    except Exception:
+        pass
+    return handler
+
 if __name__ == '__main__':
     loc = deriveLocation(
         {
@@ -202,4 +202,26 @@ if __name__ == '__main__':
             '34:f6:4b:5e:69:1e': (50, 50)
         }
     )
-    print(loc)
+    flagPlot = False
+    try:
+        import matplotlib.pyplot as plt
+        flagPlot = True
+    except Exception:
+        pass
+    if flagPlot:
+        fig = plt.figure()
+        plt.ion()
+        plt.xlim([-100, 300])
+        plt.ylim([-10, 500])
+        while 1:
+            try:
+                handler = plotLocation(loc)
+                if handler is None:
+                    plt.close(fig)
+                    break
+                handler.remove()
+            except KeyboardInterrupt:
+                plt.close(fig)
+                break
+            except Exception:
+                raise
