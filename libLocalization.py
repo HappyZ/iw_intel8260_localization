@@ -114,7 +114,7 @@ def trilateration2d(mydict, bounds=None, verbose=False):
         if mydict[loc][1]:
             # create multiple circles based on std
             for r in arange(
-                mydict[loc][0] - mydict[loc][1],
+                max(mydict[loc][0] - mydict[loc][1], 0.01),
                 mydict[loc][0] + mydict[loc][1],
                 10
             ):
