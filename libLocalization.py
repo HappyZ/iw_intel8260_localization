@@ -120,7 +120,7 @@ def trilateration2d(mydict, bounds=None, verbose=False):
             ):
                 circles.append(Circle(p, r))
         else:
-            circles.append(Circle(p, mydict[loc]))
+            circles.append(Circle(p, mydict[loc][0]))
     # print(len(points), len(circles))
     inner_points = []
     for p in get_intersecting_points(circles):
@@ -186,7 +186,7 @@ if __name__ == '__main__':
             }
         },
         {
-            '34:f6:4b:5e:69:1f': (257, 50),
+            '34:f6:4b:5e:69:1f': (257, 0),
             '34:f6:4b:5e:69:1e': (50, 50)
         }
     )
