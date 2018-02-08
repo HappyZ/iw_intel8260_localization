@@ -176,6 +176,7 @@ def deriveLocation(args, results):
 def plotLocation(loc):
     handler = None
     try:
+        import matplotlib.pyplot as plt
         handler = plt.scatter(loc[0], loc[1])
         plt.pause(0.01)
     except Exception:

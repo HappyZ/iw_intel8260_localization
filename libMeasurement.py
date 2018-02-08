@@ -201,13 +201,13 @@ def wrapper(args):
         try:
             import matplotlib.pyplot as plt
             from libLocalization import plotLocation
-            args['plot'] = False
             handler = None
             fig = plt.figure()
             plt.ion()
-            plt.xlim([-100, 500])
-            plt.ylim([-10, 500])
+            plt.xlim([-200, 500])
+            plt.ylim([-10, 1000])
         except Exception:
+            args['plot'] = False
             print('Cannot plot because lacking matplotlib!')
     with Measurement(
         args['interface'],
