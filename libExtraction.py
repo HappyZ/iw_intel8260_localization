@@ -36,9 +36,10 @@ def extract_each(fp):
     base = '_'.join(base.split('_')[:-1])  # remove time stamp
     t = int(time.time())
     for mac in results:
+        identifier = mac.replace(':', '-')
         with open(
-            '{0}_{1}{2}'
-            .format(base, t, ext), 'w'
+            '{0}_extract_{1}_{2}{3}'
+            .format(base, identifier, t, ext), 'w'
         ) as f:
             f.write(nameLine)
             if startLine:

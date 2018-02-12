@@ -29,10 +29,17 @@ class Circle(object):
 
 
 def get_distance(p1, p2):
-    return math.sqrt(
-        (p1.x - p2.x) * (p1.x - p2.x) +
-        (p1.y - p2.y) * (p1.y - p2.y)
-    )
+    if isinstance(p1, Point):
+        return math.sqrt(
+            (p1.x - p2.x) * (p1.x - p2.x) +
+            (p1.y - p2.y) * (p1.y - p2.y)
+        )
+    elif isinstance(p1, list) or isinstance(p1, tuple):
+        return math.sqrt(
+            (p1[0] - p2[0]) * (p1[0] - p2[0]) +
+            (p1[1] - p2[1]) * (p1[1] - p2[1])
+        )
+    return -1
 
 
 def get_two_circles_intersecting_points(c1, c2):
@@ -164,8 +171,8 @@ def deriveLocation(args, results):
         bounds=args.get('loc_bounds', None),
         verbose=args.get('verbose', False)
     )
-    if args.get('filepath', False):
-        with open("{0}_locs".format(args['filepath']), 'a') as f:
+    if args.get('outfp', False):
+        with open("{0}_locs".format(args['outfp']), 'a') as f:
             f.write(
                 "{0:.6f},{1:.4f},{2:.4f}\n"
                 .format(time.time(), loc[0], loc[1])
@@ -193,7 +200,7 @@ if __name__ == '__main__':
                 '34:f6:4b:5e:69:1a': {'location': '1,2'}
             },
             'verbose': True,
-            'filepath': '',
+            'outfp': '',
             'loc_bounds': {
                 'y_min': 0
             }

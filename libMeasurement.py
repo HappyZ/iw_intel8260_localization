@@ -124,7 +124,7 @@ class Measurement(object):
             raw_distance = int(match.group(6))
             raw_distance_var = int(match.group(7))
             rssi = int(match.group(8))
-            if status is not 0 or raw_distance < -1000:
+            if status is not 0 or raw_distance < -1000 or raw_distance > 10000:
                 continue
             distance = self.cali[0] * raw_distance + self.cali[1]
             result.append(
@@ -211,7 +211,7 @@ def wrapper(args):
             print('Cannot plot because lacking matplotlib!')
     with Measurement(
         args['interface'],
-        ofp=args['filepath'], cali=args['cali']
+        ofp=args['outfp'], cali=args['cali']
     ) as m:
         while 1:
             print('Round {0}'.format(counter))
@@ -264,7 +264,7 @@ def main():
         help="calibrate calibration params (pre-defined outdoor by default)"
     )
     p.add_argument(
-        '--filepath', '-f',
+        '--outfp', '-f',
         default=None,
         help="if set, will write raw fetched data to file"
     )
@@ -322,9 +322,9 @@ def main():
     # TODO: add option to change loc bounds, currently force y_min = 0
     args['loc_bounds'] = {'y_min': 0}
     # rename file path by adding time of exec
-    if args['filepath']:
-        fp, ext = os.path.splitext(args['filepath'])
-        args['filepath'] = "{0}_{1}{2}".format(fp, args['time_of_exec'], ext)
+    if args['outfp']:
+        fp, ext = os.path.splitext(args['outfp'])
+        args['outfp'] = "{0}_{1}{2}".format(fp, args['time_of_exec'], ext)
     wrapper(args)
 
 
