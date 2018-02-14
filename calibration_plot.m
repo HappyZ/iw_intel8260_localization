@@ -1,6 +1,6 @@
 % clear all; %close all;
 
-folder = 'calibration_data/new_indoor/';
+folder = 'calibration_data/outdoor/';
 files = dir(folder); files = files(3:end);  % remove . and ..
 targets = zeros(1, length(files));
 for i = length(files):-1:1
@@ -54,6 +54,8 @@ for i = 1:length(files)
         data(:, data(7, :) ~= 0) = [];
         data(:, data(9, :) < -1000) = [];
         rawDist = data(9, :);
+        rawDistVar = zeros(size(rawDist));
+        rssi = zeros(size(rawDist));
     end
 
     mean_result(i) = mean(rawDist);
@@ -67,6 +69,9 @@ for i = 1:length(files)
     fprintf('* std: %.2f (uncalibrated)\n', std(rawDist));
 
     figure(1); cdfplot(rawDist);
+    diffs_each = param_linear(1) * rawDist + param_linear(2) - targets(i);
+    pd = fitdist(diffs_each(~isnan(diffs_each))', 'Normal');
+    fit_pd_each(i) = pd;
 %     figure(2);
 %     scatter3(...
 %         sqrt(rawDistVar),...
@@ -162,6 +167,15 @@ fprintf(' parabolic mode: %.6f\n', mstd_parabolic);
 % diffs = [diffs, calibration_walking('calibration_data/walking_outdoor/result_walking_3800_to_100cm_1517706881.txt')];
 % diffs = [diffs, calibration_walking('calibration_data/walking_outdoor/result_walking_3800_to_100cm_1517706976.txt')];
 % diffs = [diffs, calibration_walking('calibration_data/walking_outdoor/result_walking_3800_to_100cm_1517707172.txt')];
+
+% 
+% diffs = [diffs, calibration_walking('calibration_data/walking_outdoor/result_walking_3800_to_100cm_r_1517706433.txt')];
+% diffs = [diffs, calibration_walking('calibration_data/walking_outdoor/result_walking_3800_to_100cm_r_1517706537.txt')];
+% diffs = [diffs, calibration_walking('calibration_data/walking_outdoor/result_walking_3800_to_100cm_r_1517706636.txt')];
+% diffs = [diffs, calibration_walking('calibration_data/walking_outdoor/result_walking_3800_to_100cm_r_1517706737.txt')];
+% diffs = [diffs, calibration_walking('calibration_data/walking_outdoor/result_walking_3800_to_100cm_r_1517706835.txt')];
+% diffs = [diffs, calibration_walking('calibration_data/walking_outdoor/result_walking_3800_to_100cm_r_1517706930.txt')];
+% diffs = [diffs, calibration_walking('calibration_data/walking_outdoor/result_walking_3800_to_100cm_r_1517707073.txt')];
 % pd = fitdist(diffs(~isnan(diffs))', 'Normal');
 % prob_fit = cdf(pd, diffs(~isnan(diffs))');
 % figure(10); clf; hold on;
@@ -171,17 +185,24 @@ fprintf(' parabolic mode: %.6f\n', mstd_parabolic);
 % title('Distribution of Distance Err When Walking')
 % legend('fitted \mu=53.5043, \sigma=72.1852', 'actual dist error', 'location', 'best')
 
+% % 
+% diffs = [];
+% diffs = [diffs, calibration_walking('calibration_data/walking_indoor/result_walking_3600_to_100cm_1517693155.txt')];
+% diffs = [diffs, calibration_walking('calibration_data/walking_indoor/result_walking_3600_to_100cm_1517693287.txt')];
+% diffs = [diffs, calibration_walking('calibration_data/walking_indoor/result_walking_3600_to_100cm_1517693408.txt')];
+% diffs = [diffs, calibration_walking('calibration_data/walking_indoor/result_walking_3600_to_100cm_1517693534.txt')];
 % 
-diffs = [];
-diffs = [diffs, calibration_walking('calibration_data/walking_indoor/result_walking_3600_to_100cm_1517693155.txt')];
-diffs = [diffs, calibration_walking('calibration_data/walking_indoor/result_walking_3600_to_100cm_1517693287.txt')];
-diffs = [diffs, calibration_walking('calibration_data/walking_indoor/result_walking_3600_to_100cm_1517693408.txt')];
-diffs = [diffs, calibration_walking('calibration_data/walking_indoor/result_walking_3600_to_100cm_1517693534.txt')];
-pd = fitdist(diffs(~isnan(diffs))', 'Normal');
-prob_fit = cdf(pd, diffs(~isnan(diffs))');
-figure(11); clf; hold on;
-scatter(diffs(~isnan(diffs))', prob_fit);
-cdfplot(diffs); xlim([-200, 200])
-xlabel('Distance Err (cm)')
-title('Distribution of Distance Err When Walking')
-legend('fitted \mu=28.8055, \sigma=50.1228', 'actual dist error', 'location', 'best')
+% diffs = [];
+% diffs = [diffs, calibration_walking('calibration_data/walking_indoor/result_walking_3600_to_100cm_r_1517693224.txt')];
+% diffs = [diffs, calibration_walking('calibration_data/walking_indoor/result_walking_3600_to_100cm_r_1517693350.txt')];
+% diffs = [diffs, calibration_walking('calibration_data/walking_indoor/result_walking_3600_to_100cm_r_1517693475.txt')];
+
+
+% pd = fitdist(diffs(~isnan(diffs))', 'Normal');
+% prob_fit = cdf(pd, diffs(~isnan(diffs))');
+% figure(11); clf; hold on;
+% scatter(diffs(~isnan(diffs))', prob_fit);
+% cdfplot(diffs); xlim([-200, 200])
+% xlabel('Distance Err (cm)')
+% title('Distribution of Distance Err When Walking')
+% legend('fitted \mu=28.8055, \sigma=50.1228', 'actual dist error', 'location', 'best')
