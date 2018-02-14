@@ -249,7 +249,7 @@ def wrapper(args):
                 break
             except Exception as e:
                 print(str(e))
-                break
+                time.sleep(5)
             counter += 1
 
 
