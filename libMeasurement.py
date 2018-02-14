@@ -248,8 +248,11 @@ def wrapper(args):
             except KeyboardInterrupt:
                 break
             except Exception as e:
-                print(str(e))
-                time.sleep(5)
+                err = str(e)
+                print(err)
+                if 'Busy' in err:
+                    break
+                time.sleep(10)
             counter += 1
 
 
