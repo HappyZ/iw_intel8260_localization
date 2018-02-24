@@ -6,7 +6,10 @@ import time
 import math
 import argparse
 
+from math import sin, cos, sqrt, atan2, radians
 from numpy import median, arange
+
+R = 6373000.0  # unit: meter
 
 # ======= start =======
 # excerpt from
@@ -29,16 +32,43 @@ class Circle(object):
 
 
 def get_distance(p1, p2):
-    if isinstance(p1, Point):
+    if isinstance(p1, Point) and isinstance(p2, Point):
         return math.sqrt(
             (p1.x - p2.x) * (p1.x - p2.x) +
             (p1.y - p2.y) * (p1.y - p2.y)
         )
-    elif isinstance(p1, list) or isinstance(p1, tuple):
+    elif (
+        (isinstance(p1, list) or isinstance(p1, tuple)) and
+        (isinstance(p2, list) or isinstance(p2, tuple))
+    ):
         return math.sqrt(
             (p1[0] - p2[0]) * (p1[0] - p2[0]) +
             (p1[1] - p2[1]) * (p1[1] - p2[1])
         )
+    return -1
+
+
+def get_distance_gps(p1, p2, isDeg=True):
+    # format: p1 ~ p2 = [lat, lon] in deg
+    if (
+        (isinstance(p1, list) or isinstance(p1, tuple)) and
+        (isinstance(p2, list) or isinstance(p2, tuple))
+    ):
+        if isDeg:
+            lat1 = radians(p1[0])
+            lon1 = radians(p1[1])
+            lat2 = radians(p2[0])
+            lon2 = radians(p2[1])
+        else:
+            lat1 = (p1[0])
+            lon1 = (p1[1])
+            lat2 = (p2[0])
+            lon2 = (p2[1])
+        dlon = lon2 - lon1
+        dlat = lat2 - lat1
+        a = sin(dlat / 2)**2 + cos(lat1) * cos(lat2) * sin(dlon / 2)**2
+        c = 2 * atan2(sqrt(a), sqrt(1 - a))
+        return R * c
     return -1
 
 
@@ -190,46 +220,49 @@ def plotLocation(loc):
         pass
     return handler
 
+
 if __name__ == '__main__':
-    loc = deriveLocation(
-        {
-            'config_entry': {
-                '34:f6:4b:5e:69:1f': {'location': '0,0'},
-                '34:f6:4b:5e:69:1e': {'location': '180,0'},
-                '34:f6:4b:5e:69:1d': {'location': '0,2'},
-                '34:f6:4b:5e:69:1a': {'location': '1,2'}
-            },
-            'verbose': True,
-            'outfp': '',
-            'loc_bounds': {
-                'y_min': 0
-            }
-        },
-        {
-            '34:f6:4b:5e:69:1f': (257, 0),
-            '34:f6:4b:5e:69:1e': (50, 50)
-        }
-    )
-    flagPlot = False
-    try:
-        import matplotlib.pyplot as plt
-        flagPlot = True
-    except Exception:
-        pass
-    if flagPlot:
-        fig = plt.figure()
-        plt.ion()
-        plt.xlim([-100, 300])
-        plt.ylim([-10, 500])
-        while 1:
-            try:
-                handler = plotLocation(loc)
-                if handler is None:
-                    plt.close(fig)
-                    break
-                handler.remove()
-            except KeyboardInterrupt:
-                plt.close(fig)
-                break
-            except Exception:
-                raise
+    dist = get_distance_gps([41.790366, -87.601111], [41.790609, -87.601411])
+    print(dist)
+    # loc = deriveLocation(
+    #     {
+    #         'config_entry': {
+    #             '34:f6:4b:5e:69:1f': {'location': '0,0'},
+    #             '34:f6:4b:5e:69:1e': {'location': '180,0'},
+    #             '34:f6:4b:5e:69:1d': {'location': '0,2'},
+    #             '34:f6:4b:5e:69:1a': {'location': '1,2'}
+    #         },
+    #         'verbose': True,
+    #         'outfp': '',
+    #         'loc_bounds': {
+    #             'y_min': 0
+    #         }
+    #     },
+    #     {
+    #         '34:f6:4b:5e:69:1f': (257, 0),
+    #         '34:f6:4b:5e:69:1e': (50, 50)
+    #     }
+    # )
+    # flagPlot = False
+    # try:
+    #     import matplotlib.pyplot as plt
+    #     flagPlot = True
+    # except Exception:
+    #     pass
+    # if flagPlot:
+    #     fig = plt.figure()
+    #     plt.ion()
+    #     plt.xlim([-100, 300])
+    #     plt.ylim([-10, 500])
+    #     while 1:
+    #         try:
+    #             handler = plotLocation(loc)
+    #             if handler is None:
+    #                 plt.close(fig)
+    #                 break
+    #             handler.remove()
+    #         except KeyboardInterrupt:
+    #             plt.close(fig)
+    #             break
+    #         except Exception:
+    #             raise

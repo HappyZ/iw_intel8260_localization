@@ -4,13 +4,13 @@
         "cf": 2462,
         "spb": 255,
         "retries": 3,
-        "location": "0,0"
+        "location": "500,0"
     },
     "34:f6:4b:5e:69:0b": {
         "bw": 20,
         "cf": 2437,
         "spb": 255,
         "retries": 3,
-        "location": "180,0"
+        "location": "0,0"
     }
 }

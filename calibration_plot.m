@@ -1,5 +1,5 @@
 % clear all; %close all;
-
+param_linear = [0.8927, 553.3157];
 folder = 'calibration_data/outdoor/';
 files = dir(folder); files = files(3:end);  % remove . and ..
 targets = zeros(1, length(files));
